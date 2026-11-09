@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const router = express.Router();
 const ListeningHistory = require("../models/ListeningHistory");
 const Song = require("../models/Song");
+const Activity = require("../models/Activity");
 const authMiddleware = require("../middleware/authMiddleware");
 router.post("/:songId", authMiddleware, async (req, res) => {
     try {
@@ -22,9 +23,15 @@ router.post("/:songId", authMiddleware, async (req, res) => {
             user: req.user._id,
             song: songId
         });
+        const activity = await Activity.create({
+            user: req.user._id,
+            song: songId,
+            type: "LISTENING"
+        });
         res.status(201).json({
-            message: "Listening history recorded successfully",
-            history
+            message: "Listening history and activity recorded successfully",
+            history,
+            activity
         });
     } catch (error) {
         res.status(500).json({

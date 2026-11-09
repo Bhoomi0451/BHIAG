@@ -8,6 +8,8 @@ const favoriteRoutes = require("./routes/favoriteRoutes");
 const playlistRoutes = require("./routes/playlistRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const historyRoutes = require("./routes/historyRoutes");
+const activityRoutes = require("./routes/activityRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const app = express();
 app.use(express.json());
 app.use("/api/favorites", favoriteRoutes);
@@ -15,6 +17,8 @@ app.use("/api/songs", songRoutes);
 app.use("/api/playlists", playlistRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/history", historyRoutes);
+app.use("/api/activities", activityRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.get("/api/auth/me", authMiddleware, (req, res) => {
     res.json({
         message: "Authentication successful",

@@ -1,12 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 router.get("/me", authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
@@ -154,7 +154,14 @@ router.post("/:userId/follow", authMiddleware, async (req, res) => {
                 message: "User not found"
             });
         }
-        if (currentUser.following.some(id => id.toString() === userId)) {
+        if (!currentUser) {
+            return res.status(404).json({
+                message: "Current user not found"
+            });
+        }
+        if (currentUser.following.some(
+            id => id.toString() === userId
+        )) {
             return res.status(409).json({
                 message: "Already following this user"
             });
@@ -163,8 +170,24 @@ router.post("/:userId/follow", authMiddleware, async (req, res) => {
         targetUser.followers.push(currentUser._id);
         await currentUser.save();
         await targetUser.save();
+        let notificationCreated = false;
+        try {
+            await Notification.create({
+                recipient: targetUser._id,
+                sender: currentUser._id,
+                type: "FOLLOW",
+                message: `${currentUser.username} started following you.`
+            });
+            notificationCreated = true;
+        } catch (notificationError) {
+            console.log(
+                "Notification creation error:",
+                notificationError.message
+            );
+        }
         res.status(200).json({
-            message: "User followed successfully"
+            message: "User followed successfully",
+            notificationCreated
         });
     } catch (error) {
         console.log("Follow error:", error);
@@ -194,7 +217,14 @@ router.delete("/:userId/follow", authMiddleware, async (req, res) => {
                 message: "User not found"
             });
         }
-        if (!currentUser.following.some(id => id.toString() === userId)) {
+        if (!currentUser) {
+            return res.status(404).json({
+                message: "Current user not found"
+            });
+        }
+        if (!currentUser.following.some(
+            id => id.toString() === userId
+        )) {
             return res.status(409).json({
                 message: "You are not following this user"
             });
@@ -212,7 +242,6 @@ router.delete("/:userId/follow", authMiddleware, async (req, res) => {
         });
     } catch (error) {
         console.log("Unfollow error:", error);
-
         res.status(500).json({
             message: "Failed to unfollow user"
         });
