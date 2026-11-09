@@ -16,12 +16,7 @@ const listeningHistorySchema = new mongoose.Schema(
             default: Date.now
         }
     },
-    {
-        timestamps: true
-    }
+    { timestamps: true }
 );
 listeningHistorySchema.index({ user: 1, playedAt: -1 });
-module.exports = mongoose.model(
-    "ListeningHistory",
-    listeningHistorySchema
-);
+module.exports = mongoose.model("ListeningHistory", listeningHistorySchema);
